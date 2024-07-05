@@ -15,16 +15,16 @@ class CompositeLoss(nn.Module):
 
         self.losses = []
         for loss_type in loss_list:
-            if "pairwise_mvmhat" in loss_type or "triplewise_mvmhat " in loss_type:
+            if "pairwise_mvmhat" in loss_type or "triplewise_mvmhat" in loss_type:
                 self.losses.append(MvMHATCycleLoss(loss_type, args))
             elif "cycle_variations" in loss_type:
                 self.losses.append(CycleVariationsLoss(loss_type, args))
 
-    def forward(self, all_S, all_P):
+    def forward(self, all_S):
         loss = torch.tensor(0.0).cuda()
         for l in range(len(self.losses)):
             loss_class = self.losses[l]
-            curr_loss = loss_class._compute_loss(all_S, all_P)
+            curr_loss = loss_class._compute_loss(all_S)
             loss += curr_loss
         return loss
    
@@ -38,7 +38,7 @@ class CycleLoss(ABC):
         self.epsilon = 0.1
         
     @abstractmethod
-    def _compute_loss(self, all_S, all_P=None):
+    def _compute_loss(self, all_S):
         pass
     
     def _to_S_hat(self, S, custom_epsilon = None): 
@@ -102,9 +102,7 @@ class CycleVariationsLoss(CycleLoss):
 
 
     #Outer most function called to compute the loss
-    def _compute_loss(self, all_S, all_P= None):
-        self.all_P = all_P
-        
+    def _compute_loss(self, all_S):
         pairwise_loss = self._pair_loss(all_S)
 
         triple_loss = self._triple_loss(all_S)
@@ -119,11 +117,6 @@ class CycleVariationsLoss(CycleLoss):
         for i,j in pairs:  
             if self.masking:
                 I_iji = self._get_pairwise_I_sudo(all_S, i, j)
-                #Possibly Track statistics for the masks
-                if self.stats:
-                    self.P_cycle = torch.mm(self.all_P[i][j], self.all_P[j][i])
-                    P_mask = torch.max(self.P_cycle, 1)[0].bool()
-                    self._update_mask_stats(I_iji, P_mask, "pair")
             else:
                 I_iji = None
 
@@ -140,11 +133,6 @@ class CycleVariationsLoss(CycleLoss):
             #One mask per unique triple
             if self.masking:
                 I_ijki = self._get_triplewise_I_sudo(all_S, i,j,k)
-
-                if self.stats:
-                    self.P_cycle = torch.mm(torch.mm(self.all_P[i][j], self.all_P[j][k]), self.all_P[k][i])
-                    P_mask = torch.max(self.P_cycle, 1)[0].bool()
-                    self._update_mask_stats(I_ijki, P_mask, "triple")
             else:
                 I_ijki = None
 
@@ -153,7 +141,6 @@ class CycleVariationsLoss(CycleLoss):
                 triple_cycle = triple_cycle_func(all_S, i,j,k)
                 triple_loss +=  self._cycle_loss(triple_cycle, I_ijki)
         return triple_loss/(len(triples))/len(self.cyc_vars)
-
 
 
     def _cycle_loss(self, A_cycle, I_mask=None):
@@ -284,68 +271,6 @@ class CycleVariationsLoss(CycleLoss):
                         triples.append((k,i,j))
                         triples.append((k,j,i))
         return triples
-
-
-#############################################
-# COMPUNTG STATS
-    def init_stats(self):
-        self.stats = {
-            'pair': self.init_cycle_stats(),
-            'triple': self.init_cycle_stats()
-        }
-
-    def init_cycle_stats(self):
-        # Initialize counters for cumulative sums and counts
-        return {
-            'TP': 0,
-            'FP': 0,
-            'FN': 0,
-            'TN': 0,
-        }
-
-    def _update_mask_stats(self, I_sudo_mask, P_mask, mask_type):
-        y_pred = I_sudo_mask.to(dtype=torch.int)
-        y_true = P_mask.to(dtype=torch.int)
-
-        TP_array = (y_pred == 1) & (y_true == 1)
-        FP_array = (y_pred == 1) & (y_true == 0)
-        FN_array = (y_pred == 0) & (y_true == 1)
-        TN_array = (y_pred == 0) & (y_true == 0)
-        TP, FP, FN, TN = TP_array.sum(), FP_array.sum(), FN_array.sum(), TN_array.sum()
-
-        self.stats[mask_type]['TP'] += TP.item()
-        self.stats[mask_type]['FP'] += FP.item()
-        self.stats[mask_type]['FN'] += FN.item()
-        self.stats[mask_type]['TN'] += TN.item()
-
-    def print_stats(self):
-        #if folder with model name does not exist, create it
-        mask_stat_folder = f'./Cross_View_Association/Results/mask_statistics/{self.loss_type}/'
-        if not os.path.exists(mask_stat_folder):
-            os.makedirs(mask_stat_folder)
-
-        #Write to seperate file per epoch
-        epoch_file = mask_stat_folder + f'/Epoch_{self.epoch}.txt'
-        with open(epoch_file, 'w') as f:
-            for mask_type in self.stats:
-                stats = self.stats[mask_type]
-                precision = stats['TP'] / (stats['TP'] + stats['FP']) if stats['TP'] + stats['FP'] > 0 else 0
-                recall = stats['TP'] / (stats['FN'] + stats['TP']) if stats['FN'] + stats['TP'] > 0 else 0
-                f1_score = 2 * precision * recall / (precision + recall) if precision + recall > 0 else 0
-
-                f.write(f'\n\n\n{mask_type}:\n')
-
-                f.write(f'TP: {stats["TP"]}\n')
-                f.write(f'FP: {stats["FP"]}\n')
-                f.write(f'FN: {stats["FN"]}\n')
-                f.write(f'TN: {stats["TN"]}\n')
-                f.write(f'Precision: {precision}\n')
-                f.write(f'Recall: {recall}\n')
-                f.write(f'\nF1 Score: {f1_score}\n\n')
-        f.close()
-        return
-# END
-#############################################
 
 
 class MvMHATCycleLoss(CycleLoss):

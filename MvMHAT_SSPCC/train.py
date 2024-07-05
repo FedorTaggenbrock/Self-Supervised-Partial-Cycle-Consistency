@@ -64,9 +64,8 @@ def train(epoch):
             #feature_ls = [cbe_view1_frame1, cbe_view1_frame2, cbe_view2_frame1, cbe_view2_frame2, cbe_view3_frame1, cbe_view3_frame2]
             #label_ls = [label_view1_frame1, label_view1_frame2, label_view2_frame1, label_view2_frame2, label_view3_frame1, label_view3_frame2]
             all_S = gen_S(feature_ls, args)
-            all_P = gen_P(label_ls)
 
-            step_loss = composite_loss(all_S, all_P)
+            step_loss = composite_loss(all_S)
             if step_loss != 0.0:
                 epoch_loss += step_loss.item()
                 if epoch >= 0:
@@ -93,12 +92,6 @@ def partial_fov_indices(box, view_i, ratio):
                 filtered_indices.append(i)
     return filtered_indices
 
-def split_feature_ls(feature_ls, num_frames):
-    # feature_ls containts [cbe_view1_frame1, cbe_view1_frame2, ... cbe_view2_frame1, ...]
-    # for the number of frames.
-    #return [cbe_view1_frame1, cbe_view2_frame1, cbe_view3_frame1], [cbe_view1_frame2, cbe_view2_frame2, ...], ...
-    return [feature_ls[i::num_frames] for i in range(num_frames)]
-
 def gen_S(feature_ls, args):
     # cbe = concatenated_boundingbox_embeddings, transformed with the model, has dimension (num_bounding_boxes, 1000) -> embedding dimension.
     #feature_ls = [cbe_view1_frame1, cbe_view1_frame2, cbe_view2_frame1, cbe_view2_frame2, cbe_view3_frame1, cbe_view3_frame2, cbe_view4_frame1, cbe_view4_frame2]
@@ -117,22 +110,6 @@ def gen_S(feature_ls, args):
         #  [v_t c u_t-1, ....],
         #    ....  
     return all_blocks_S  
-
-def gen_P(lbl_ls):
-    # label has dimension [num_bboxes]
-    #label_ls = [label_view1_frame1, label_view1_frame2, label_view2_frame1, label_view2_frame2, label_view3_frame1, label_view3_frame2]
-    all_P = []
-    for i in range(len(lbl_ls)):
-        row_P = []
-        for j in range(len(lbl_ls)):
-            P = torch.zeros((len(lbl_ls[i]),len(lbl_ls[j]))).cuda()
-            for k in range(len(lbl_ls[i])):
-                for l in range(len(lbl_ls[j])):
-                    if lbl_ls[i][k] == lbl_ls[j][l]:
-                        P[k][l] = 1
-            row_P.append(P)
-        all_P.append(row_P)
-    return all_P
 
 def make_write_str(composite_loss, epoch, step_loss, epoch_loss, final = False):
     if not final:
