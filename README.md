@@ -86,7 +86,13 @@ chmod +x main_results.sh
 ~~~
 We also provide main_results.txt, which contains the multi-view matching F1 score of each method in our tables, reported per individual run. 
 
-Below we also visualize the overall performance of our main contributions per run:
+## Visualizing Results
+
+We visualize the overall performance of our main contributions per run:
 
 <img src="./model_comparisons.png" alt="Model scores visualized" width="600"/>
 
+
+## Extra Qualitative Results
+
+Two insightfull qualitative examples are provided in the paper, but more are provided in MVM_EVAL/Qualitative_Results.
