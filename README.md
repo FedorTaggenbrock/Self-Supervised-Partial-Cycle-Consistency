@@ -44,7 +44,7 @@ cd SSPCC/DATA
 chmod +x download_and_extract.sh
 ./download_and_extract.sh the_password_here
 ~~~
-Process the data to be in a usable format:
+Prepare the data for model training and evaluation:
 ~~~
 python convert_divo.py
 ~~~
