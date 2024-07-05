@@ -50,7 +50,7 @@ python convert_divo.py
 ~~~
 
 ## Training
-To train the first run of our model with cycle variations and partial masking, call:
+The first run of our model can be trained with the following python call:
 ~~~
 cd SSPCC/
 python MvMHAT_SSPCC/train.py --EX_ID Masked_CV_0123_TDSS_s0 --SEED 0 --TDSS True --LOSSES cycle_variations_0123 --PARTIAL_MASKING True
@@ -79,9 +79,9 @@ python MVM_EVAL/Evaluate.py --model Masked_CV_0123_TDSS_s0
 ~~~
 
 ## Generating Tables
-We provide scripts to generate the main results for the tables in our paper.
+We provide a script to generate the main results for the tables in our paper.
 ~~~
 chmod +x main_results.sh
 ./main_results.sh
 ~~~
-We also provide main_results.txt, which contains the performance of each method in our tables with explicit values for each run. 
+We also provide main_results.txt, which contains the multi-view matching F1 score of each method in our tables, reported per individual run. 
