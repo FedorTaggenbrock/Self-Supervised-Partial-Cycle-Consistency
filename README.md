@@ -3,7 +3,7 @@
 This repository contains the pytorch implementation of the Self-Supervised Partial Cycle-Consistency for Multi-View Matching paper. 
 
 ## Abstract
-Matching objects across partially overlapping camera views is crucial in multi-camera systems and requires a view-invariant feature extraction network. Training such a network with cycle-consistency circumvents the need for labor-intensive labeling. In our paper, we extend the mathematical formulation of cycle-consistency to handle partial overlap. We then derive several cycle variants and introduce a pseudo-mask which directs the training loss to take partial cycle-consistency into account, consequently improving the self-supervised learning signal. We additionally present a time-divergent scene sampling scheme that improves the data input for self-supervised settings. Cross-camera matching experiments on the challenging DIVOTrack dataset show the merits of our approach. Compared to the self-supervised state-of-the-art, we achieve 4.3\% higher F1 score with our combined contributions. Our improvements are robust to reduced overlap in the training data, with substantial improvements in scenes with few matches between many people. Self-supervised feature networks trained with our method are effective at matching objects in a range of multi-camera settings, providing opportunities for complex tasks like large-scale multi-camera scene understanding.
+Matching objects across partially overlapping camera views is crucial in multi-camera systems and requires a view-invariant feature extraction network. Training such a network with cycle-consistency circumvents the need for labor-intensive labeling. In our paper, we extend the mathematical formulation of cycle-consistency to handle partial overlap. We then derive several cycle variants and introduce a pseudo-mask which directs the training loss to take partial cycle-consistency into account, consequently improving the self-supervised learning signal. We additionally present a time-divergent scene sampling scheme that improves the data input for self-supervised settings. Cross-camera matching experiments on the challenging DIVOTrack dataset show the merits of our approach. Compared to the self-supervised state-of-the-art, we achieve a 4.3 percentage point higher F1 score with our combined contributions. Our improvements are robust to reduced overlap in the training data, with substantial improvements in scenes with few matches between many people. Self-supervised feature networks trained with our method are effective at matching objects in a range of multi-camera settings, providing opportunities for complex tasks like large-scale multi-camera scene understanding.
 
 ## Citation
 This code is built on top of [MvMHAT](https://github.com/realgump/MvMHAT) with the data from [DIVOTrack](https://github.com/shengyuhao/DIVOTrack). Thanks for their great work.
@@ -85,3 +85,8 @@ chmod +x main_results.sh
 ./main_results.sh
 ~~~
 We also provide main_results.txt, which contains the multi-view matching F1 score of each method in our tables, reported per individual run. 
+
+Below we also visualize the overall performance of our main contributions per run:
+
+<img src="./model_comparisons.png" alt="Model scores visualized" width="600"/>
+
