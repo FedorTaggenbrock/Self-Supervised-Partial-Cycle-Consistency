@@ -55,7 +55,7 @@ To train the first run of our model with cycle variations and partial masking, c
 cd SSPCC/
 python MvMHAT_SSPCC/train.py --EX_ID Masked_CV_0123_TDSS_s0 --SEED 0 --TDSS True --LOSSES cycle_variations_0123 --PARTIAL_MASKING True
 ~~~
-The masking can also be disabled, or different cyle variations can be used with for example --LOSSES cycle_variations_02.
+The masking can also be disabled, or different cyle variations can be used, for example with --LOSSES cycle_variations_12.
 
 
 Models from MvMHAT can be trained as follows, either with or without TDSS:
