@@ -197,7 +197,7 @@ if __name__ == '__main__':
             }
 
             torch.save(save_dict,
-                "/cross-view/DIVOTrack/Cross_view_Tracking/MvMHAT/models/" + args.EX_ID + '.pth'
+                "MvMHAT_SSPCC/models/" + args.EX_ID + '.pth'
             )
             write_str = make_write_str(composite_loss, epoch_i, avg_epoch_loss, epoch_loss, final = True)
             write_str +=  "all command line args: " +str(vars(args))
