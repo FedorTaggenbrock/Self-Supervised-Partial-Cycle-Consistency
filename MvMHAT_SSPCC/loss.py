@@ -31,8 +31,7 @@ class CompositeLoss(nn.Module):
 class CycleLoss(ABC):
     def __init__(self, loss_type):
         self.epoch = 0
-        self.stats = False
-            
+
         self.m = 0.5
         self.delta = 0.5
         self.epsilon = 0.1
@@ -77,12 +76,6 @@ class CycleVariationsLoss(CycleLoss):
             self.m2 = 0.3
         else:
             self.masking = False
-        
-        if "stats" in loss_type:
-            self.stats = True
-            self.init_stats()
-        else:
-            self.stats = False
 
     def _extract_cycle_vars(self, loss_type):
         cyc_var_dict = {
