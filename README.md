@@ -84,11 +84,12 @@ We provide a script to generate the main results for the tables in our paper.
 chmod +x main_results.sh
 ./main_results.sh
 ~~~
-We also provide main_results.txt, which contains the multi-view matching F1 score of each method in our tables, reported per individual run. 
 
-## Visualizing Results
+## Results
 
-We visualize the overall performance of our main contributions per run:
+We provide main_results.txt, which contains the multi-view matching F1 score of each method in our tables, reported per individual run. 
+
+We also visualize the overall performance of our main contributions per run:
 
 <img src="./model_comparisons.png" alt="Model scores visualized" width="600"/>
 
