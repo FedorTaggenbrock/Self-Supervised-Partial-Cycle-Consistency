@@ -88,7 +88,10 @@ class CycleVariationsLoss(CycleLoss):
         pattern = r'cycle_variations_([0-9]+)'
         matches = re.findall(pattern, loss_type)
         if matches:
-            self.cyc_vars = list([cyc_var_dict[int(var)] for var in matches[0]])
+            cycle_nums = [int(var) for var in matches[0]]
+            cycle_nums.sort()
+            cycle_nums.append(cycle_nums.pop(0)) 
+            self.cyc_vars = list([cyc_var_dict[num] for num in cycle_nums])
         else:
             raise ValueError("Specify cycle variations in the loss type")
         return self.cyc_vars

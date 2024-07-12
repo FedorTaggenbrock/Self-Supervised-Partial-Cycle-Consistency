@@ -139,7 +139,7 @@ if __name__ == '__main__':
     #Default parameters that don't need to be changed
     parser.add_argument('--PRETRAIN', type=bool, default=True, help='Start with pretrained model')
     parser.add_argument("--NUM_FRAMES", type=int, default = 2, help='The number of timesteps to use in a batch')
-    parser.add_argument("--TIMESTEP_RANGE", type=int, default = 1, help='The distance between the timesteps in a batch')	
+    parser.add_argument("--TIMESTEP_RANGE", type=int, default = 1, help='The distance between the timesteps in a batch')
     # Parse the arguments
     args = parser.parse_args()
 
@@ -152,7 +152,7 @@ if __name__ == '__main__':
     else:
         model = resnet50(weights=None) 
 
-    checkpoint_path = '/cross-view/DIVOTrack/Cross_view_Tracking/MvMHAT/models/pretrained.pth'
+    checkpoint_path = 'MvMHAT_SSPCC/models/pretrained.pth'
     ckp = torch.load(checkpoint_path)
         
     model.load_state_dict(ckp)
