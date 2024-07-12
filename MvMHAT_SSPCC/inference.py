@@ -89,7 +89,7 @@ def run(dataset_name, display, dataset, model):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default=C.INF_ID)
+    parser.add_argument('--model', type=str, default=None)
     args = parser.parse_args()
 
     checkpoint_path = "MvMHAT_SSPCC/models/" + args.model + '.pth'
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     model.load_state_dict(model_ckp)
 
     for dataset_name in C.TEST_DATASET:
-        save_feature[dataset_name] = run(dataset_name , display=C.DISPLAY, dataset=dataset_name, model=model)
+        save_feature[dataset_name] = run(dataset_name , display=0, dataset=dataset_name, model=model)
 
     np.save(output_name, save_feature)
 

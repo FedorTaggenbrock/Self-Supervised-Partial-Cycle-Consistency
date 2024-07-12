@@ -126,8 +126,7 @@ class Loader(Dataset):
             if self.mode == 'train':
                 anno_path = os.path.join(self.root_dir, 'train_gt', self.dataset, view + '.txt')
             elif self.mode == 'test':
-                anno_path = os.path.join(C.TESTBB_DIR, '{}_{}.txt'.format(self.dataset, view))
-
+                anno_path = os.path.join(self.root_dir, 'train_gt', self.dataset, view + '.txt')
                 	
             with open(anno_path, 'r') as anno_file:
                 anno_lines = anno_file.readlines()
@@ -135,7 +134,7 @@ class Loader(Dataset):
                     if self.mode == 'train': 
                         anno_line_ls = anno_line.split(' ')
                     else:
-                        anno_line_ls = anno_line.split(',')
+                        anno_line_ls = anno_line.split(' ')
                     anno_key = str(int(anno_line_ls[0]))
                     anno_view_dict[anno_key].append(anno_line_ls)
                     if max_id < int(anno_line_ls[1]):

@@ -31,7 +31,7 @@ The license agreement for data usage implies the citation of the paper above. Pl
 
 
 ## Get Started
-The code was tested on ubuntu with python 3.10, pytorch 2.0.1  An Nvidia GPU is needed for both training and testing. 
+The code was tested on ubuntu with python 3.10, pytorch 2.0.1  A single Nvidia GPU is needed and used for both training and testing. 
 Install requirements.txt.
 
 
