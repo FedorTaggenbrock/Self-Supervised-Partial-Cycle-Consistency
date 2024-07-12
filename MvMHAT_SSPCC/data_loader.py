@@ -11,22 +11,16 @@ from torch.utils.data import Sampler
 from torch.utils.data import DataLoader, ConcatDataset
 
 class Loader(Dataset):
-    def __init__(self, views=3, frames=2, timestep_range = 1, mode='train', dataset='1', bbox_size = (224,224), shuffle = False, testbb = True, true_rand = False):
-        self.video_name = ['circleRegion', 'innerShop', 'movingView', 'park', 'playground', 'shopFrontGate', 'shopSecondFloor', 'shopSideGate', 'shopSideSquare', 'southGate']
-        # self.video_name = ['park']
-        self.views_name = ['Drone', 'View1', 'View2']
-        self.true_rand = true_rand
+    def __init__(self, frames=2, timestep_range = 1, mode='train', dataset=None, bbox_size = (224,224), shuffle = False):
+        self.view_ls = ['Drone', 'View1', 'View2']
         self.isShuffle = shuffle
-        self.random_seed_num = 0
-        self.views = views
         self.mode = mode
-        self.testbb = testbb
-        self.dataset = dataset
-        self.down_sample = 1
         self.root_dir = os.path.join(C.ROOT_DIR)
-        self.img_root = os.path.join(C.ROOT_DIR, 'images'+"_"+mode) #changed here!
-        self.bb_size = bbox_size
+        self.img_root = os.path.join(C.ROOT_DIR, 'images'+"_"+mode)
+        self.bbox_size = bbox_size
         self.isCut = 0
+        self.dataset = dataset
+        #dataset refers to the scene name.
         self.dataset_dir = os.path.join(self.img_root, dataset)
         self.cut_dict = {
                 'circleRegion': [0, 1600],
@@ -47,15 +41,12 @@ class Loader(Dataset):
             self.frames = 1
             # self.isCut = 1
 
-        self.view_ls = self.views_name
         self.set_epoch_img_dict(timestep_range = timestep_range)
-
         self.anno_dict, self.max_id, self.view_id_ls = self.gen_anno_dict()
 
     def set_epoch_img_dict(self, timestep_range =1):
         self.img_dict = self._gen_path_dict(timestep_range=timestep_range)
     
-
     def generate_shuffled_indices(self, n):
         indices = list(range(n))
         random.shuffle(indices)
@@ -98,38 +89,16 @@ class Loader(Dataset):
             if cut:
                 path_ls = path_ls[:-cut]
             if self.isShuffle: 
-                #Everytime the path dict is generated, the random seed num is consistent across the views
-                random.seed(self.random_seed_num)
                 random.shuffle(path_ls)
             path_dict[view] += path_ls
 
             
         if timestep_range == 1:
-            #The original implementation, always uses timestep t-1 and t, does not randomize by definition
+            #The original implementation, always uses timestep t-1 and t
             path_dict = {view: [path_dict[view][i:i + self.frames] for i in range(0, len(path_dict[view]), self.frames)] for
                         view in path_dict}
-        elif self.true_rand:
-            #so timestep_range >1. 
-            #Each batch consists of 2 indices with a random dt between 1 and timestep_range.
-            total_steps = len(path_dict[self.view_ls[0]])
-            index_pairs = self.generate_rand_pairs(total_steps, timestep_range)
-            for view in path_dict:
-                new_path_ls = []
-                for pair in index_pairs:
-                    new_path_ls.append([path_dict[view][pair[0]], path_dict[view][pair[1]]])
-                path_dict[view] = new_path_ls
         else:
-            #When we don't randomize, we always take timesteps [t-range, t], [t-range+1, t+1], [t-range+2, t+2], etc. when self.frames = 2. 
-            #when self.frames =3 for example it becomes [t-range, t-range/2, t], ...
-            
-            # Using the same list [0, 1, 2, ..., 20], a timestep_range of 3, and self.frames of 3, the final output will handle the remaining indices as a group:
-            # [0, 3, 6]
-            # [1, 4, 7]
-            # [2, 5, 8]
-            # [9, 12, 15]
-            # [10, 13, 16]
-            # [11, 14, 17]
-            # 18, 19 ,20 are skipped.
+            #We take timesteps [t-range, t], [t-range+1, t+1], [t-range+2, t+2], etc. when self.frames = 2 for example. Also made to work with self.frames>2 although this is not used in the paper.
             for view in path_dict:
                 new_path_ls = []
                 total_steps = len(path_dict[view])
@@ -142,10 +111,8 @@ class Loader(Dataset):
                         new_path_ls.append([path_dict[view][index] for index in frame_indices])
                         used_indices.update(frame_indices)
                     i += 1
-                
                 path_dict[view] = new_path_ls
-                                        
-        self.random_seed_num +=1
+                                    
         return path_dict
 
     def gen_anno_dict(self):
@@ -159,10 +126,7 @@ class Loader(Dataset):
             if self.mode == 'train':
                 anno_path = os.path.join(self.root_dir, 'train_gt', self.dataset, view + '.txt')
             elif self.mode == 'test':
-                if self.testbb:
-                    anno_path = os.path.join(C.TESTBB_DIR, '{}_{}.txt'.format(self.dataset, view))
-                else:
-                    anno_path = os.path.join(C.DETECTION_DIR, '{}_{}.txt'.format(self.dataset, view))
+                anno_path = os.path.join(C.TESTBB_DIR, '{}_{}.txt'.format(self.dataset, view))
 
                 	
             with open(anno_path, 'r') as anno_file:
@@ -225,7 +189,7 @@ class Loader(Dataset):
             crop = img[bbox[1]:bbox[3] + bbox[1], bbox[0]:bbox[2] + bbox[0], :]
 
             # resize bbox to 224x224 and transpose to CHW layout, needed for pytorch
-            crop = cv2.resize(crop, self.bb_size).transpose(2, 0, 1).astype(np.float32)
+            crop = cv2.resize(crop, self.bbox_size).transpose(2, 0, 1).astype(np.float32)
             c_img_ls.append(crop)
             bbox_ls.append(bbox)
             label_ls.append(lbl)
@@ -339,7 +303,7 @@ def create_dataset(mode = 'train', timestep_range = 1, frames=2, TDSS = False, b
     datasets = []
     for dataset in C.TRAIN_DATASET: #contains all the scenes in the training data.
         timestep_range_ = timestep_range
-        datasets.append(Loader(views=C.VIEWS, timestep_range = timestep_range,  frames=frames, mode=mode, dataset=dataset, shuffle = False, bbox_size=bbox_size))
+        datasets.append(Loader(timestep_range = timestep_range,  frames=frames, mode=mode, dataset=dataset, shuffle = False, bbox_size=bbox_size))
     concat_dataset = ConcatDataset(datasets)
     if TDSS:
         sampler = SceneSampler(concat_dataset, seed)

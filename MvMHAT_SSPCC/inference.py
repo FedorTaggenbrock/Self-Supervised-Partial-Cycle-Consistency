@@ -17,7 +17,7 @@ from MvMHAT_SSPCC.data_loader import Loader
 
 
 def read_loader(dataset_name):
-    dataset = Loader(frames=1, views=3, mode='test', dataset=dataset_name, testbb=  True, bbox_size=(224,224))
+    dataset = Loader(frames=1, mode='test', dataset=dataset_name)
     dataset_loader = DataLoader(dataset, num_workers=8)
     dataset_info = {
         'view': dataset.view_ls,
